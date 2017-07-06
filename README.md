@@ -6,7 +6,7 @@ It submits your form via ajax and updates current page contents with matching pa
 ## Usage
 
 example.html
-```
+```html
 <form action="example-submit.php" method="post" id="my-form">
     ...
 </form>
@@ -41,7 +41,7 @@ example.html
 ```
 
 inside `form#my-form`
-```
+```html
 <div class="fcjaxify" id="message"></div>
 <p>
     Username: <input type="text" name="username">
@@ -54,7 +54,7 @@ inside `form#my-form`
 ```
 
 Supposed that posting to `example-submit.php` in normal way produce a page with `form#my-form`...
-```
+```html
 <div class="fcjaxify" id="message">
     <p>Invalid username.</p>
     <script>console.log('scripts inside updateable components will be executed')</script>
@@ -72,6 +72,13 @@ Supposed that posting to `example-submit.php` in normal way produce a page with 
 ```
 then the current `.fcjaxify` elements will be replaced.
 
+If you put `.fcjaxify` as updatable element selector, all `.fcjaxify` elements must have an ID
+because they will only be replaced by elements with same ID.
+
 ## More
 
 Run [example](https://rawgit.com/sumartoyo/fcjax/master/example.html) and read the source code for more information.
+
+## License
+
+MIT
