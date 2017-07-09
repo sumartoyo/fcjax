@@ -16,7 +16,7 @@ example.html
 <script>
     // fcjax(form selector, updatable element selector, event handlers object)
     fcjax('#my-form', '.fcjaxify', {
-        onSubmit: function(submitEvent, form) {
+        onSubmit: function(submitEvent, formElement) {
             // called when submitting the form
             return false; // returning false won't send ajax request
         },

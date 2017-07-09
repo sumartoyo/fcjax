@@ -1,83 +1,7 @@
 var noop = function() {};
 
 var fcjax = function(formSelector, blockSelector, handlers) {
-  var forms = document.querySelectorAll(formSelector);
-
-  forms.forEach(function(form) {
-    form.xhr = form.xhr || { abort: noop };
-
-    form.onsubmit = function(submitEvent) {
-      submitEvent.preventDefault();
-      if (handlers.onSubmit instanceof Function) {
-        if (handlers.onSubmit(submitEvent, form) === false) {
-          return;
-        }
-      }
-
-      var method = form.method.toUpperCase();
-      var url = form.action;
-      var formData = new FormData(form);
-      handlers = handlers instanceof Object ? handlers : {};
-
-      if (method == 'GET') {
-        var parameters = []
-        for (var pair of formData.entries()) {
-          parameters.push(
-            encodeURIComponent(pair[0]) + '=' +
-            encodeURIComponent(pair[1])
-          );
-        }
-        url += (url.indexOf('?') == -1 ? '?' : '&') + parameters.join('&');
-      }
-
-      form.xhr.abort();
-      var xhr = new XMLHttpRequest();
-      xhr.open(method, url);
-
-      xhr.onprogress = function(xhrEvent) {
-        if (handlers.onProgress instanceof Function) {
-          handlers.onProgress(xhrEvent, xhr);
-        }
-        if (handlers.onAlways instanceof Function) {
-          handlers.onAlways();
-        }
-      };
-
-      xhr.onload = function(xhrEvent) {
-        var isContinue = true;
-        if (handlers.onLoaded instanceof Function) {
-          isContinue = handlers.onLoaded(xhr) !== false;
-        }
-        if (isContinue) {
-          replaceBlocks(xhr.responseText);
-          if (handlers.onDone instanceof Function) {
-            handlers.onDone(xhr);
-          }
-          if (handlers.onAlways instanceof Function) {
-            handlers.onAlways();
-          }
-        }
-      };
-
-      xhr.onerror = function(xhrEvent) {
-        if (handlers.onError instanceof Function) {
-          handlers.onError(xhr);
-        }
-        if (handlers.onAlways instanceof Function) {
-          handlers.onAlways();
-        }
-      };
-
-      if (method == 'GET') {
-        xhr.send();
-      } else {
-        xhr.send(formData);
-      }
-      form.xhr = xhr;
-
-      return false;
-    };
-  });
+  handlers = handlers instanceof Object ? handlers : {};
 
   var replaceBlocks = function(html) {
     var bodyMatches = /<body[^>]*>([\s\S.]*)<\/body>/i.exec(html);
@@ -130,4 +54,85 @@ var fcjax = function(formSelector, blockSelector, handlers) {
       });
     });
   };
+
+  var submitForm = function(form) {
+    var method = form.method.toUpperCase();
+    var url = form.action;
+    var formData = new FormData(form);
+
+    if (method == 'GET') {
+      var parameters = []
+      for (var pair of formData.entries()) {
+        parameters.push(
+          encodeURIComponent(pair[0]) + '=' +
+          encodeURIComponent(pair[1])
+        );
+      }
+      url += (url.indexOf('?') == -1 ? '?' : '&') + parameters.join('&');
+    }
+
+    form.xhr.abort();
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+
+    xhr.onprogress = function(xhrEvent) {
+      if (handlers.onProgress instanceof Function) {
+        handlers.onProgress(xhrEvent, xhr);
+      }
+      if (handlers.onAlways instanceof Function) {
+        handlers.onAlways();
+      }
+    };
+
+    xhr.onload = function(xhrEvent) {
+      var isContinue = true;
+      if (handlers.onLoaded instanceof Function) {
+        isContinue = handlers.onLoaded(xhr) !== false;
+      }
+      if (isContinue) {
+        replaceBlocks(xhr.responseText);
+        if (handlers.onDone instanceof Function) {
+          handlers.onDone(xhr);
+        }
+        if (handlers.onAlways instanceof Function) {
+          handlers.onAlways();
+        }
+      }
+    };
+
+    xhr.onerror = function(xhrEvent) {
+      if (handlers.onError instanceof Function) {
+        handlers.onError(xhr);
+      }
+      if (handlers.onAlways instanceof Function) {
+        handlers.onAlways();
+      }
+    };
+
+    if (method == 'GET') {
+      xhr.send();
+    } else {
+      xhr.send(formData);
+    }
+    form.xhr = xhr;
+  };
+
+
+
+  var forms = document.querySelectorAll(formSelector);
+  forms.forEach(function(form) {
+    form.xhr = { abort: noop };
+    form.onsubmit = function(submitEvent) {
+      submitEvent.preventDefault();
+      setTimeout(function() {
+        if (handlers.onSubmit instanceof Function) {
+          if (handlers.onSubmit(submitEvent, form) === false) {
+            return;
+          }
+        }
+        submitForm(form);
+      }, 1);
+      return false;
+    };
+  });
 };
