@@ -1,5 +1,3 @@
-var noop = function() {};
-
 var fcjax = function(formSelector, blockSelector, handlers) {
   handlers = handlers instanceof Object ? handlers : {};
 
@@ -121,7 +119,7 @@ var fcjax = function(formSelector, blockSelector, handlers) {
 
   var forms = document.querySelectorAll(formSelector);
   forms.forEach(function(form) {
-    form.xhr = { abort: noop };
+    form.xhr = { abort: Function.prototype };
     form.onsubmit = function(submitEvent) {
       submitEvent.preventDefault();
       setTimeout(function() {
